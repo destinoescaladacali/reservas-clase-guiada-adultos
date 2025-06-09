@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Reservas - Clase Guiada Adultos</title>
   <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     button.dia {
       margin: 5px;
       padding: 10px 20px;
@@ -14,6 +15,12 @@
       background-color: #4CAF50;
       color: white;
       font-weight: bold;
+    }
+    select, input, button {
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -31,7 +38,6 @@
 
     <div id="diasContainer">
       <p>Selecciona un día:</p>
-      <!-- Aquí se generan los botones de días -->
     </div>
 
     <input type="hidden" id="diaSeleccionado" name="dia" required>
@@ -46,7 +52,8 @@
   <p id="mensaje"></p>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec"; // <-- REEMPLAZA esto con tu URL real
+    const API_URL = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec"; // <-- REEMPLAZA CON TU URL
+
     let horariosPorDia = {};
 
     fetch(API_URL)
