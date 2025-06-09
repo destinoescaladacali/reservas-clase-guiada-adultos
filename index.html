@@ -2,49 +2,33 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Reservas Uso de Espacio</title>
+  <title>Reservar clase guiada</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    button.dia {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .activo {
-      background-color: #4CAF50;
-      color: white;
-      font-weight: bold;
-    }
-    select, input, button {
-      width: 100%;
-      margin-top: 5px;
-      padding: 8px;
-      font-size: 14px;
-    }
+    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+    input, select, button { width: 100%; padding: 10px; margin: 10px 0; }
+    .days button { width: 100%; margin-bottom: 5px; }
+    .active-day { background-color: #4CAF50; color: white; }
+    #mensaje { font-weight: bold; padding: 10px; }
   </style>
 </head>
 <body>
-  <h2>Reserva de Uso del espacio</h2>
+  <h2>Reservar clase guiada</h2>
+
   <form id="reservaForm">
-    Nombre:<br>
-    <input type="text" name="nombre" required><br><br>
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required>
 
-    Correo electrónico:<br>
-    <input type="email" name="correo" required><br><br>
+    <label>Correo electrónico:</label>
+    <input type="email" name="correo" required>
 
-    Celular:<br>
-    <input type="tel" name="celular" required><br><br>
+    <label>Celular:</label>
+    <input type="text" name="celular" required>
 
-    <div id="diasContainer">
-      <p>Selecciona un día:</p>
-    </div>
+    <label>Selecciona un día:</label>
+    <div id="dias" class="days"></div>
 
-    <input type="hidden" id="diaSeleccionado" name="dia" required>
-
-    <br>
-    Horario:<br>
-    <select id="horario" name="horario" required></select><br><br>
+    <label>Horario:</label>
+    <select name="horario" id="horario" required></select>
 
     <button type="submit">Reservar</button>
   </form>
@@ -52,63 +36,66 @@
   <p id="mensaje"></p>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec"; // <-- REEMPLAZA CON TU URL
+    const url = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec"; // Reemplazar con tu URL real
 
     let horariosPorDia = {};
+    let diaSeleccionado = "";
 
-    fetch(API_URL)
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         horariosPorDia = data;
-        const contenedor = document.getElementById("diasContainer");
-
-        for (let dia in data) {
+        const diasDiv = document.getElementById("dias");
+        for (const dia in data) {
           const btn = document.createElement("button");
           btn.type = "button";
           btn.textContent = dia;
-          btn.className = "dia";
           btn.onclick = () => seleccionarDia(dia, btn);
-          contenedor.appendChild(btn);
+          diasDiv.appendChild(btn);
         }
       });
 
     function seleccionarDia(dia, boton) {
-      document.getElementById("diaSeleccionado").value = dia;
-      document.querySelectorAll("button.dia").forEach(b => b.classList.remove("activo"));
-      boton.classList.add("activo");
+      diaSeleccionado = dia;
+      document.querySelectorAll("#dias button").forEach(b => b.classList.remove("active-day"));
+      boton.classList.add("active-day");
 
-      const selectHorario = document.getElementById("horario");
-      selectHorario.innerHTML = "";
-
-      horariosPorDia[dia].forEach(h => {
-        const opt = new Option(h, h);
-        selectHorario.appendChild(opt);
+      const horarios = horariosPorDia[dia];
+      const select = document.getElementById("horario");
+      select.innerHTML = "";
+      horarios.forEach(h => {
+        const option = document.createElement("option");
+        option.value = h;
+        option.textContent = h;
+        select.appendChild(option);
       });
     }
 
-    document.getElementById('reservaForm').addEventListener("submit", function(e) {
+    document.getElementById("reservaForm").addEventListener("submit", e => {
       e.preventDefault();
+      const formData = new FormData(e.target);
+      formData.append("dia", diaSeleccionado);
 
-      if (!document.getElementById("diaSeleccionado").value) {
-        document.getElementById("mensaje").textContent = "⚠️ Debes seleccionar un día.";
-        return;
-      }
-
-      const form = new FormData(this);
-      fetch(API_URL, {
+      fetch(url, {
         method: "POST",
-        body: form
+        body: formData
       })
       .then(res => res.text())
       .then(msg => {
         document.getElementById("mensaje").textContent = msg;
         if (msg.includes("✅")) {
-          this.reset();
-          document.querySelectorAll("button.dia").forEach(b => b.classList.remove("activo"));
+          document.getElementById("reservaForm").reset();
           document.getElementById("horario").innerHTML = "";
+          document.querySelectorAll("#dias button").forEach(b => b.classList.remove("active-day"));
         }
+      })
+      .catch(() => {
+        document.getElementById("mensaje").textContent = "❌ Error al enviar reserva";
       });
     });
   </script>
 </body>
 </html>
+
+
+  
