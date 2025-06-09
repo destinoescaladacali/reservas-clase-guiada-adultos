@@ -36,7 +36,7 @@
   <p id="mensaje"></p>
 
   <script>
-    const url = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec"; // Reemplazar con tu URL real
+    const url = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec";
 
     let horariosPorDia = {};
     let diaSeleccionado = "";
@@ -76,9 +76,17 @@
       const formData = new FormData(e.target);
       formData.append("dia", diaSeleccionado);
 
+      const datos = new URLSearchParams();
+      formData.forEach((value, key) => {
+        datos.append(key, value);
+      });
+
       fetch(url, {
         method: "POST",
-        body: formData
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: datos
       })
       .then(res => res.text())
       .then(msg => {
@@ -97,5 +105,3 @@
 </body>
 </html>
 
-
-  
