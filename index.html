@@ -3,6 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>Reservas - Clase Guiada Adultos</title>
+  <style>
+    button.dia {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .activo {
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <h2>Reservar clase guiada</h2>
@@ -16,9 +29,14 @@
     Celular:<br>
     <input type="tel" name="celular" required><br><br>
 
-    Día:<br>
-    <select id="dia" name="dia" required></select><br><br>
+    <div id="diasContainer">
+      <p>Selecciona un día:</p>
+      <!-- Aquí se generan los botones de días -->
+    </div>
 
+    <input type="hidden" id="diaSeleccionado" name="dia" required>
+
+    <br>
     Horario:<br>
     <select id="horario" name="horario" required></select><br><br>
 
@@ -28,30 +46,47 @@
   <p id="mensaje"></p>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec"; // Reemplaza con tu URL real
+    const API_URL = "https://script.google.com/macros/s/XXXXX/exec"; // <-- REEMPLAZA esto con tu URL real
+    let horariosPorDia = {};
 
     fetch(API_URL)
-      .then(r => r.json())
+      .then(res => res.json())
       .then(data => {
-        const diaSelect = document.getElementById('dia');
-        const horarioSelect = document.getElementById('horario');
+        horariosPorDia = data;
+        const contenedor = document.getElementById("diasContainer");
+
         for (let dia in data) {
-          const opt = new Option(dia, dia);
-          diaSelect.appendChild(opt);
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = dia;
+          btn.className = "dia";
+          btn.onclick = () => seleccionarDia(dia, btn);
+          contenedor.appendChild(btn);
         }
-        diaSelect.addEventListener("change", () => {
-          horarioSelect.innerHTML = "";
-          data[diaSelect.value].forEach(h => {
-            const opt = new Option(h, h);
-            opt.value = h;
-            horarioSelect.appendChild(opt);
-          });
-        });
-        diaSelect.dispatchEvent(new Event("change"));
       });
+
+    function seleccionarDia(dia, boton) {
+      document.getElementById("diaSeleccionado").value = dia;
+      document.querySelectorAll("button.dia").forEach(b => b.classList.remove("activo"));
+      boton.classList.add("activo");
+
+      const selectHorario = document.getElementById("horario");
+      selectHorario.innerHTML = "";
+
+      horariosPorDia[dia].forEach(h => {
+        const opt = new Option(h, h);
+        selectHorario.appendChild(opt);
+      });
+    }
 
     document.getElementById('reservaForm').addEventListener("submit", function(e) {
       e.preventDefault();
+
+      if (!document.getElementById("diaSeleccionado").value) {
+        document.getElementById("mensaje").textContent = "⚠️ Debes seleccionar un día.";
+        return;
+      }
+
       const form = new FormData(this);
       fetch(API_URL, {
         method: "POST",
@@ -60,7 +95,11 @@
       .then(res => res.text())
       .then(msg => {
         document.getElementById("mensaje").textContent = msg;
-        if (msg.includes("✅")) this.reset();
+        if (msg.includes("✅")) {
+          this.reset();
+          document.querySelectorAll("button.dia").forEach(b => b.classList.remove("activo"));
+          document.getElementById("horario").innerHTML = "";
+        }
       });
     });
   </script>
