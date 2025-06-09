@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reservas - Clase Guiada Adultos</title>
+</head>
+<body>
+  <h2>Reservar clase guiada</h2>
+  <form id="reservaForm">
+    Nombre:<br>
+    <input type="text" name="nombre" required><br><br>
+
+    Correo electrónico:<br>
+    <input type="email" name="correo" required><br><br>
+
+    Celular:<br>
+    <input type="tel" name="celular" required><br><br>
+
+    Día:<br>
+    <select id="dia" name="dia" required></select><br><br>
+
+    Horario:<br>
+    <select id="horario" name="horario" required></select><br><br>
+
+    <button type="submit">Reservar</button>
+  </form>
+
+  <p id="mensaje"></p>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyMu76HKtHu77AX3wYiOB0Q7VlxNvzSd_bqrDGnBmc8IBgXV6mP8dAbYc49C2m9wlKcaA/exec"; // Reemplaza con tu URL real
+
+    fetch(API_URL)
+      .then(r => r.json())
+      .then(data => {
+        const diaSelect = document.getElementById('dia');
+        const horarioSelect = document.getElementById('horario');
+        for (let dia in data) {
+          const opt = new Option(dia, dia);
+          diaSelect.appendChild(opt);
+        }
+        diaSelect.addEventListener("change", () => {
+          horarioSelect.innerHTML = "";
+          data[diaSelect.value].forEach(h => {
+            const opt = new Option(h, h);
+            opt.value = h;
+            horarioSelect.appendChild(opt);
+          });
+        });
+        diaSelect.dispatchEvent(new Event("change"));
+      });
+
+    document.getElementById('reservaForm').addEventListener("submit", function(e) {
+      e.preventDefault();
+      const form = new FormData(this);
+      fetch(API_URL, {
+        method: "POST",
+        body: form
+      })
+      .then(res => res.text())
+      .then(msg => {
+        document.getElementById("mensaje").textContent = msg;
+        if (msg.includes("✅")) this.reset();
+      });
+    });
+  </script>
+</body>
+</html>
