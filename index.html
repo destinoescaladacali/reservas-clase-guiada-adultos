@@ -1,122 +1,129 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reserva Clase Guiada</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reserva uso del espacio</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: auto;
-      padding: 20px;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    #mensaje {
-      margin-top: 20px;
-      font-weight: bold;
-      color: #006400;
-    }
+   
   </style>
 </head>
 <body>
-  <h2>Reserva Clase Guiada</h2>
-  <form id="reservaForm">
-    <label for="nombre">Nombre:</label>
-    <input type="text" id="nombre" name="nombre" required>
+  <h2>Reservas Uso del Espacio</h2>
+  <div id="spinner">Cargando disponibilidad...</div>
+  <div class="container">
+    <form id="reservaForm">
+      <label>Nombre:</label>
+      <input type="text" name="nombre" required>
 
-    <label for="acudiente">Nombre del acudiente:</label>
-    <input type="text" id="acudiente" name="acudiente" required>
+      <label>Correo electrónico:</label>
+      <input type="email" name="correo" required>
 
-    <label for="correo">Correo electrónico:</label>
-    <input type="email" id="correo" name="correo" required>
+      <label>Celular:</label>
+      <input type="text" name="celular" required>
 
-    <label for="celular">Celular:</label>
-    <input type="text" id="celular" name="celular" required>
+      <label>Selecciona un día:</label>
+      <div id="dias" class="days"></div>
 
-    <label for="dia">Día:</label>
-    <select id="dia" name="dia" required></select>
+      <label>Horario:</label>
+      <select name="horario" id="horario" required></select>
 
-    <label for="horario">Horario:</label>
-    <select id="horario" name="horario" required></select>
-
-    <button type="submit">Reservar</button>
-  </form>
-
-  <div id="mensaje"></div>
+      <button type="submit">Reservar</button>
+    </form>
+    <p id="mensaje"></p>
+    <button id="otraReserva">Hacer otra reserva</button>
+  </div>
 
   <script>
-    const webAppURL = "[https://script.google.com/macros/s/AKfycbwHKxzdHQkFUdZNA-HAn3Jpz9fB4TEaWHSHDzlZI3f3ESiZe7oMk-pEq5TJgvY-pt3ehg/exec]";
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxcK6wD9ESDvFMrefazi9I_6RkzGOOhdsJW808O_qdZANmGn_4ZEV7XbLSjdqs1rRjqTg/exec"; // Reemplaza con tu URL
 
-    // Obtener disponibilidad
-    fetch(webAppURL + "?action=disponibilidad")
+    let disponibilidad = {};
+    let diaSeleccionado = "";
+
+    document.getElementById("spinner").style.display = "block";
+
+    fetch(WEBAPP_URL + "?action=obtenerDisponibilidad")
       .then(res => res.json())
       .then(data => {
-        const diaSelect = document.getElementById("dia");
-        for (const dia in data) {
-          const opt = document.createElement("option");
-          opt.value = dia;
-          opt.textContent = dia;
-          diaSelect.appendChild(opt);
-        }
-
-        diaSelect.addEventListener("change", () => {
-          const horarioSelect = document.getElementById("horario");
-          horarioSelect.innerHTML = "";
-          data[diaSelect.value].forEach(hora => {
-            const opt = document.createElement("option");
-            opt.value = hora;
-            opt.textContent = hora;
-            horarioSelect.appendChild(opt);
-          });
+        disponibilidad = data;
+        document.getElementById("spinner").style.display = "none";
+        const diasDiv = document.getElementById("dias");
+        const orden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        orden.forEach(dia => {
+          if (disponibilidad[dia]) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = dia;
+            btn.onclick = () => seleccionarDia(dia, btn);
+            diasDiv.appendChild(btn);
+          }
         });
-
-        diaSelect.dispatchEvent(new Event("change"));
+      })
+      .catch(error => {
+        document.getElementById("spinner").style.display = "none";
+        alert("⚠️ Error al cargar disponibilidad: " + error.message);
       });
 
-    // Enviar reserva
+    function seleccionarDia(dia, boton) {
+      diaSeleccionado = dia;
+      document.querySelectorAll("#dias button").forEach(b => b.classList.remove("active-day"));
+      boton.classList.add("active-day");
+      const select = document.getElementById("horario");
+      select.innerHTML = "";
+      disponibilidad[dia].forEach(h => {
+        const opt = document.createElement("option");
+        opt.value = h;
+        opt.textContent = h;
+        select.appendChild(opt);
+      });
+    }
+
     document.getElementById("reservaForm").addEventListener("submit", e => {
       e.preventDefault();
-      const form = e.target;
-      const formData = new FormData(form);
-      const obj = {};
-      formData.forEach((value, key) => obj[key] = value);
 
-      fetch(webAppURL, {
+      if (!diaSeleccionado) {
+        alert("Selecciona un día");
+        return;
+      }
+
+      const formData = new FormData(e.target);
+      formData.append("dia", diaSeleccionado);
+      formData.append("action", "registrarReserva");
+
+      document.getElementById("spinner").style.display = "block";
+
+      fetch(WEBAPP_URL, {
         method: "POST",
-        body: JSON.stringify(obj),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        body: formData,
       })
-      .then(res => res.text())
-      .then(msg => {
-        document.getElementById("mensaje").textContent = msg;
-        form.reset();
-        document.getElementById("horario").innerHTML = "";
-        document.getElementById("dia").dispatchEvent(new Event("change"));
-      })
-      .catch(err => {
-        document.getElementById("mensaje").textContent = "Error: " + err.message;
-      });
-  });
+        .then(res => res.text())
+        .then(msg => {
+          document.getElementById("spinner").style.display = "none";
+          document.getElementById("mensaje").textContent = msg;
+          document.getElementById("mensaje").style.display = "block";
+
+          if (msg.includes("✅")) {
+            document.getElementById("reservaForm").reset();
+            document.getElementById("horario").innerHTML = "";
+            document.querySelectorAll("#dias button").forEach(b => b.classList.remove("active-day"));
+            document.getElementById("otraReserva").style.display = "block";
+          }
+        })
+        .catch(error => {
+          document.getElementById("spinner").style.display = "none";
+          alert("❌ Error: " + error.message);
+        });
+    });
+
+    document.getElementById("otraReserva").addEventListener("click", () => {
+      document.getElementById("reservaForm").reset();
+      document.getElementById("horario").innerHTML = "";
+      document.querySelectorAll("#dias button").forEach(b => b.classList.remove("active-day"));
+      document.getElementById("mensaje").style.display = "none";
+      document.getElementById("otraReserva").style.display = "none";
+      diaSeleccionado = "";
+    });
   </script>
 </body>
 </html>
+
