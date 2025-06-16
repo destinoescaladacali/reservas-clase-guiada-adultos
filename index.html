@@ -135,11 +135,13 @@
     let diaSeleccionado = "";
     let disponibilidad = {};
 
-    fetch(`${API_URL}?action=obtenerDisponibilidad`)
-      .then(res => res.json())
-      .then(data => {
-        disponibilidad = data;
+    async function cargarDisponibilidad() {
+      try {
+        const res = await fetch(`${API_URL}?action=obtenerDisponibilidad`);
+        disponibilidad = await res.json();
+
         const diasDiv = document.getElementById("dias");
+        diasDiv.innerHTML = "";
         Object.keys(disponibilidad).forEach(dia => {
           const btn = document.createElement("button");
           btn.type = "button";
@@ -147,8 +149,10 @@
           btn.onclick = () => seleccionarDia(dia, btn);
           diasDiv.appendChild(btn);
         });
-      })
-      .catch(err => mostrarMensaje("Error al cargar disponibilidad.", false));
+      } catch (err) {
+        mostrarMensaje("Error al cargar disponibilidad.", false);
+      }
+    }
 
     function seleccionarDia(dia, boton) {
       diaSeleccionado = dia;
@@ -192,6 +196,7 @@
           document.getElementById("horario").innerHTML = "";
           document.querySelectorAll("#dias button").forEach(b => b.classList.remove("active-day"));
           document.getElementById("otraReserva").style.display = "block";
+          cargarDisponibilidad();
         }
       } catch (error) {
         mostrarMensaje("Error al enviar la reserva.", false);
@@ -211,7 +216,21 @@
       document.querySelectorAll("#dias button").forEach(b => b.classList.remove("active-day"));
       document.getElementById("mensaje").style.display = "none";
       document.getElementById("otraReserva").style.display = "none";
+      diaSeleccionado = "";
+      cargarDisponibilidad();
     });
+
+    cargarDisponibilidad();
   </script>
 </body>
 </html>
+
+
+   
+
+    
+     
+
+    
+
+     
