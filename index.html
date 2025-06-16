@@ -3,67 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reservas Destino</title>
+  <title>Reserva uso del espacio</title>
   <style>
     body {
-      font-family: sans-serif;
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #f8f8f8;
-      border-radius: 10px;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
     }
+
+    .container {
+      max-width: 500px;
+      background: #ffffff;
+      margin: 60px auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 24px;
+    }
+
     label {
       display: block;
       margin-top: 15px;
       font-weight: bold;
+      color: #444;
     }
-    input, select, button {
+
+    input, select {
       width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 5px;
+      padding: 12px;
+      margin-top: 6px;
       border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
     }
+
     button {
+      width: 100%;
+      padding: 14px;
       background-color: #FF9F1C;
       color: white;
-      border: none;
+      font-size: 16px;
       font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      margin-top: 24px;
       cursor: pointer;
-      margin-top: 20px;
     }
+
     #mensaje {
       margin-top: 20px;
-      font-weight: bold;
+      font-weight: 500;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    #mensaje.success {
+      background-color: #e6f4ea;
+      color: #1a5e20;
+      border: 1px solid #a5d6a7;
+    }
+
+    #mensaje.error {
+      background-color: #fdecea;
+      color: #b00020;
+      border: 1px solid #f5c6cb;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>Reserva uso del espacio</h2>
-  <form id="reservaForm">
-    <label for="nombre">Nombre</label>
-    <input type="text" name="nombre" required />
 
-    <label for="correo">Correo electrónico</label>
-    <input type="email" name="correo" required />
+  <div class="container">
+    <h2>Reservas Uso del Espacio</h2>
+    <form id="reservaForm">
+      <label for="nombre">Nombre</label>
+      <input type="text" name="nombre" required />
 
-    <label for="celular">Celular</label>
-    <input type="text" name="celular" required />
+      <label for="correo">Correo electrónico</label>
+      <input type="email" name="correo" required />
 
-    <label for="dia">Día</label>
-    <select name="dia" id="dia" required></select>
+      <label for="celular">Celular</label>
+      <input type="text" name="celular" required />
 
-    <label for="horario">Horario</label>
-    <select name="horario" id="horario" required></select>
+      <label for="dia">Día</label>
+      <select name="dia" id="dia" required></select>
 
-    <button type="submit">Reservar</button>
-  </form>
+      <label for="horario">Horario</label>
+      <select name="horario" id="horario" required></select>
 
-  <div id="mensaje"></div>
+      <button type="submit">Reservar</button>
+    </form>
+
+    <div id="mensaje"></div>
+  </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxcK6wD9ESDvFMrefazi9I_6RkzGOOhdsJW808O_qdZANmGn_4ZEV7XbLSjdqs1rRjqTg/exec"; // reemplaza con tu propia URL si cambia
+    const API_URL = "https://script.google.com/macros/s/AKfycbxcK6wD9ESDvFMrefazi9I_6RkzGOOhdsJW808O_qdZANmGn_4ZEV7XbLSjdqs1rRjqTg/exec";
 
     let disponibilidad = {};
 
@@ -81,7 +129,7 @@
 
         document.getElementById("horario").innerHTML = "<option value=''>Selecciona un horario</option>";
       } catch (err) {
-        document.getElementById("mensaje").textContent = "⚠️ Error al cargar disponibilidad.";
+        mostrarMensaje("⚠️ Error al cargar disponibilidad.", true);
       }
     }
 
@@ -114,22 +162,23 @@
         });
 
         const text = await res.text();
-        document.getElementById("mensaje").textContent = text;
+        mostrarMensaje(text, !text.includes("✅"));
         if (text.includes("✅")) {
           form.reset();
           document.getElementById("horario").innerHTML = "<option value=''>Selecciona un horario</option>";
         }
       } catch (error) {
-        document.getElementById("mensaje").textContent = "❌ Error al enviar la reserva.";
+        mostrarMensaje("❌ Error al enviar la reserva.", true);
       }
     });
+
+    function mostrarMensaje(msg, esError = false) {
+      const div = document.getElementById("mensaje");
+      div.textContent = msg;
+      div.className = esError ? "error" : "success";
+    }
 
     cargarDisponibilidad();
   </script>
 </body>
 </html>
-
-
-      
-
-  
