@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reservas Uso del Espacio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet"/>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -12,7 +12,6 @@
       margin: 0;
       padding: 20px;
     }
-
     .container {
       max-width: 500px;
       margin: auto;
@@ -21,18 +20,15 @@
       padding: 30px;
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
-
     h2 {
       text-align: center;
       color: #333;
     }
-
     label {
       font-weight: 600;
       margin-top: 10px;
       display: block;
     }
-
     input, select, button {
       width: 100%;
       padding: 12px;
@@ -42,14 +38,12 @@
       border: 1px solid #ccc;
       font-size: 15px;
     }
-
     .days {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       justify-content: center;
     }
-
     .days button {
       background-color: #eee;
       border: none;
@@ -58,19 +52,16 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-
     .days button.active-day {
       background-color: #ff9800;
       color: white;
     }
-
     button[type="submit"] {
       background: #ffa726;
       color: white;
       font-weight: bold;
       border: none;
     }
-
     #mensaje {
       display: none;
       text-align: center;
@@ -79,19 +70,16 @@
       border-radius: 10px;
       margin-top: 10px;
     }
-
     #mensaje.ok {
       background: #e6f4ea;
       color: #202124;
       border-left: 6px solid #34a853;
     }
-
     #mensaje.err {
       background: #ffe8e8;
       color: #c62828;
       border-left: 6px solid #c62828;
     }
-
     #otraReserva {
       display: none;
       margin-top: 10px;
@@ -109,13 +97,13 @@
 
     <form id="reservaForm">
       <label>Nombre:</label>
-      <input type="text" name="nombre" required>
+      <input type="text" name="nombre" required />
 
       <label>Correo electrónico:</label>
-      <input type="email" name="correo" required>
+      <input type="email" name="correo" required />
 
       <label>Celular:</label>
-      <input type="text" name="celular" required>
+      <input type="text" name="celular" required />
 
       <label>Selecciona un día:</label>
       <div id="dias" class="days"></div>
@@ -135,23 +123,23 @@
     let diaSeleccionado = "";
     let disponibilidad = {};
 
-    async function cargarDisponibilidad() {
-      try {
-        const res = await fetch(`${API_URL}?action=obtenerDisponibilidad`);
-        disponibilidad = await res.json();
+    function cargarDisponibilidad() {
+      const script = document.createElement("script");
+      script.src = `${API_URL}?action=obtenerDisponibilidad&callback=mostrarDiasDisponibles`;
+      document.body.appendChild(script);
+    }
 
-        const diasDiv = document.getElementById("dias");
-        diasDiv.innerHTML = "";
-        Object.keys(disponibilidad).forEach(dia => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.textContent = dia;
-          btn.onclick = () => seleccionarDia(dia, btn);
-          diasDiv.appendChild(btn);
-        });
-      } catch (err) {
-        mostrarMensaje("Error al cargar disponibilidad.", false);
-      }
+    function mostrarDiasDisponibles(data) {
+      disponibilidad = data;
+      const diasDiv = document.getElementById("dias");
+      diasDiv.innerHTML = "";
+      Object.keys(disponibilidad).forEach(dia => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = dia;
+        btn.onclick = () => seleccionarDia(dia, btn);
+        diasDiv.appendChild(btn);
+      });
     }
 
     function seleccionarDia(dia, boton) {
@@ -220,16 +208,10 @@
       cargarDisponibilidad();
     });
 
+    // inicial
     cargarDisponibilidad();
   </script>
 </body>
 </html>
 
-
-
-       
- 
-
-    
-
-     
+   
